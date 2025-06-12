@@ -7,9 +7,9 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/asanluis/grafana-dashboard-reporter-app/pkg/plugin/chrome"
+	"github.com/asanluis/grafana-dashboard-reporter-app/pkg/plugin/config"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
-	"github.com/mahendrapaipuri/grafana-dashboard-reporter-app/pkg/plugin/chrome"
-	"github.com/mahendrapaipuri/grafana-dashboard-reporter-app/pkg/plugin/config"
 )
 
 // Dashboard represents a Grafana dashboard resource.
@@ -144,7 +144,7 @@ func (p *Panel) IsSingleStat() bool {
 
 // IsPartialWidth If panel has width less than total allowable width.
 func (p *Panel) IsPartialWidth() bool {
-	return (p.GridPos.W < 24)
+	return p.GridPos.W < 24
 }
 
 // Width returns the width of the panel.
