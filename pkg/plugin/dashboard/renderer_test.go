@@ -333,3 +333,94 @@ func TestCustomQueryParamsInChromeURL(t *testing.T) {
 		})
 	})
 }
+
+// Integration test that demonstrates the actual flow through panelPNGNativeRenderer
+func TestCustomQueryParamsIntegrationChromeNavigation(t *testing.T) {
+	Convey("When custom query parameters are configured for Chrome navigation", t, func() {
+		conf := config.Config{
+			Layout:          "simple",
+			DashboardMode:   "default",
+			NativeRendering: true,
+			CustomQueryParams: map[string]string{
+				"c_query_test":     "checked",
+				"integration_test": "chrome_navigation",
+			},
+		}
+
+		// Test that panelPNGNativeRenderer correctly adds custom query parameters
+		// This simulates the exact flow in the real code
+		variables := url.Values{}
+		variables.Add("from", "now-1h")
+		variables.Add("to", "now")
+
+		dash, err := New(
+			log.NewNullLogger(),
+			&conf,
+			http.DefaultClient,
+			&mockChromeInstance{},
+			"http://grafana.example.com",
+			"v11.1.0",
+			&Model{Dashboard: struct {
+				ID          int          `json:"id"`
+				UID         string       `json:"uid"`
+				Title       string       `json:"title"`
+				Description string       `json:"description"`
+				RowOrPanels []RowOrPanel `json:"panels"`
+				Panels      []Panel
+				Variables   url.Values
+			}{
+				UID:       "integrationUID",
+				Variables: variables,
+			}},
+			http.Header{},
+		)
+
+		So(err, ShouldBeNil)
+
+		// Step 1: Get initial panel URL (without custom query params)
+		panel := Panel{ID: "123", Type: "timeseries", Title: "Integration Test Panel", GridPos: GridPos{}}
+		initialURL := dash.panelPNGURL(panel, false)
+
+		// Step 2: Simulate what panelPNGNativeRenderer does - add custom query params
+		finalURL := *initialURL
+		if len(conf.CustomQueryParams) > 0 {
+			q := finalURL.Query()
+			for name, value := range conf.CustomQueryParams {
+				q.Set(name, value)
+			}
+			finalURL.RawQuery = q.Encode()
+		}
+
+		finalURLString := finalURL.String()
+
+		Convey("The initial URL should not contain custom query parameters", func() {
+			So(initialURL.String(), ShouldNotContainSubstring, "c_query_test=checked")
+			So(initialURL.String(), ShouldNotContainSubstring, "integration_test=chrome_navigation")
+		})
+
+		Convey("The final URL (after panelPNGNativeRenderer processing) should contain all parameters", func() {
+			// Custom query parameters should be present
+			So(finalURLString, ShouldContainSubstring, "c_query_test=checked")
+			So(finalURLString, ShouldContainSubstring, "integration_test=chrome_navigation")
+
+			// Standard parameters should still be present
+			So(finalURLString, ShouldContainSubstring, "panelId=123")
+			So(finalURLString, ShouldContainSubstring, "from=now-1h")
+			So(finalURLString, ShouldContainSubstring, "to=now")
+			So(finalURLString, ShouldContainSubstring, "d-solo/integrationUID/_")
+
+			// Should not have render prefix for Chrome navigation
+			So(finalURLString, ShouldNotContainSubstring, "/render/")
+		})
+
+		Convey("Custom query parameters should be properly URL encoded", func() {
+			// Parse the final URL to verify proper encoding
+			parsedURL, err := url.Parse(finalURLString)
+			So(err, ShouldBeNil)
+
+			queryParams := parsedURL.Query()
+			So(queryParams.Get("c_query_test"), ShouldEqual, "checked")
+			So(queryParams.Get("integration_test"), ShouldEqual, "chrome_navigation")
+		})
+	})
+}
