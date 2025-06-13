@@ -45,13 +45,13 @@ type Config struct {
 	CustomQueryParams map[string]string `env:"GF_REPORTER_PLUGIN_CUSTOM_QUERY_PARAMS, overwrite"    json:"customQueryParams"`
 	AppVersion        string            `json:"appVersion"`
 	// Timeout configuration fields (in seconds)
-	Timeout                 int `env:"GF_REPORTER_PLUGIN_TIMEOUT, overwrite"                     json:"timeout"`
-	DialTimeout             int `env:"GF_REPORTER_PLUGIN_DIAL_TIMEOUT, overwrite"                json:"dialTimeout"`
-	HTTPKeepAlive           int `env:"GF_REPORTER_PLUGIN_HTTP_KEEP_ALIVE, overwrite"             json:"httpKeepAlive"`
-	HTTPTLSHandshakeTimeout int `env:"GF_REPORTER_PLUGIN_HTTP_TLS_HANDSHAKE_TIMEOUT, overwrite"  json:"httpTLSHandshakeTimeout"`
-	HTTPIdleConnTimeout     int `env:"GF_REPORTER_PLUGIN_HTTP_IDLE_CONN_TIMEOUT, overwrite"      json:"httpIdleConnTimeout"`
-	HTTPMaxConnsPerHost     int `env:"GF_REPORTER_PLUGIN_HTTP_MAX_CONNS_PER_HOST, overwrite"     json:"httpMaxConnsPerHost"`
-	HTTPMaxIdleConns        int `env:"GF_REPORTER_PLUGIN_HTTP_MAX_IDLE_CONNS, overwrite"         json:"httpMaxIdleConns"`
+	Timeout                 int `env:"GF_REPORTER_PLUGIN_TIMEOUT, overwrite"                      json:"timeout"`
+	DialTimeout             int `env:"GF_REPORTER_PLUGIN_DIAL_TIMEOUT, overwrite"                 json:"dialTimeout"`
+	HTTPKeepAlive           int `env:"GF_REPORTER_PLUGIN_HTTP_KEEP_ALIVE, overwrite"              json:"httpKeepAlive"`
+	HTTPTLSHandshakeTimeout int `env:"GF_REPORTER_PLUGIN_HTTP_TLS_HANDSHAKE_TIMEOUT, overwrite"   json:"httpTLSHandshakeTimeout"`
+	HTTPIdleConnTimeout     int `env:"GF_REPORTER_PLUGIN_HTTP_IDLE_CONN_TIMEOUT, overwrite"       json:"httpIdleConnTimeout"`
+	HTTPMaxConnsPerHost     int `env:"GF_REPORTER_PLUGIN_HTTP_MAX_CONNS_PER_HOST, overwrite"      json:"httpMaxConnsPerHost"`
+	HTTPMaxIdleConns        int `env:"GF_REPORTER_PLUGIN_HTTP_MAX_IDLE_CONNS, overwrite"          json:"httpMaxIdleConns"`
 	HTTPMaxIdleConnsPerHost int `env:"GF_REPORTER_PLUGIN_HTTP_MAX_IDLE_CONNS_PER_HOST, overwrite" json:"httpMaxIdleConnsPerHost"`
 	IncludePanelIDs         []string
 	ExcludePanelIDs         []string
