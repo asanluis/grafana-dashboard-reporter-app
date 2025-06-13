@@ -17,19 +17,6 @@ import (
 	"github.com/mahendrapaipuri/authlib/authz"
 )
 
-type customHeaderTransport struct {
-	base    http.RoundTripper
-	headers map[string]string
-}
-
-func (t *customHeaderTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	for name, value := range t.headers {
-		req.Header.Set(name, value)
-	}
-
-	return t.base.RoundTrip(req)
-}
-
 const Name = "mahendrapaipuri-dashboardreporter-app"
 
 // Make sure App implements required interfaces. This is important to do
@@ -105,21 +92,18 @@ func NewDashboardReporterApp(ctx context.Context, settings backend.AppInstanceSe
 
 	// Configure redirect handling to allow unlimited redirects
 	app.httpClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		// Apply custom headers to redirect requests if configured
-		for name, value := range app.conf.CustomHttpHeaders {
-			req.Header.Set(name, value)
+		// Apply custom query parameters to redirect requests if configured
+		if len(app.conf.CustomQueryParams) > 0 {
+			q := req.URL.Query()
+			for name, value := range app.conf.CustomQueryParams {
+				q.Set(name, value)
+			}
+
+			req.URL.RawQuery = q.Encode()
 		}
 
 		// Allow unlimited redirects
 		return nil
-	}
-
-	// Add custom headers to the HTTP client if configured
-	if len(app.conf.CustomHttpHeaders) > 0 {
-		app.httpClient.Transport = &customHeaderTransport{
-			base:    app.httpClient.Transport,
-			headers: app.conf.CustomHttpHeaders,
-		}
 	}
 
 	// Create a new browser instance

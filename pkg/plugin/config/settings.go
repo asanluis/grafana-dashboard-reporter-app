@@ -42,7 +42,7 @@ type Config struct {
 	MaxRenderWorkers    int               `env:"GF_REPORTER_PLUGIN_MAX_RENDER_WORKERS, overwrite"     json:"maxRenderWorkers"`
 	RemoteChromeURL     string            `env:"GF_REPORTER_PLUGIN_REMOTE_CHROME_URL, overwrite"      json:"remoteChromeUrl"`
 	NativeRendering     bool              `env:"GF_REPORTER_PLUGIN_NATIVE_RENDERER, overwrite"        json:"nativeRenderer"`
-	CustomHttpHeaders   map[string]string `env:"GF_REPORTER_PLUGIN_CUSTOM_HTTP_HEADERS, overwrite"    json:"customHttpHeaders"`
+	CustomQueryParams   map[string]string `env:"GF_REPORTER_PLUGIN_CUSTOM_QUERY_PARAMS, overwrite"    json:"customQueryParams"`
 	AppVersion          string            `json:"appVersion"`
 	IncludePanelIDs     []string
 	ExcludePanelIDs     []string
@@ -202,9 +202,9 @@ func Load(ctx context.Context, settings backend.AppInstanceSettings) (Config, er
 		return Config{}, fmt.Errorf("error in reading config env vars: %w", err)
 	}
 
-	// Initialize CustomHttpHeaders if nil
-	if config.CustomHttpHeaders == nil {
-		config.CustomHttpHeaders = make(map[string]string)
+	// Initialize CustomQueryParams if nil
+	if config.CustomQueryParams == nil {
+		config.CustomQueryParams = make(map[string]string)
 	}
 
 	// Validate config
