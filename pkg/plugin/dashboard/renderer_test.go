@@ -214,9 +214,8 @@ func TestCustomQueryParamsInRenderURL(t *testing.T) {
 	})
 }
 
-// Mock Chrome instance for testing
+// Mock Chrome instance for testing.
 type mockChromeInstance struct {
-	capturedURL string
 }
 
 func (m *mockChromeInstance) NewTab(logger log.Logger, conf *config.Config) *chrome.Tab {
@@ -229,28 +228,6 @@ func (m *mockChromeInstance) Name() string {
 
 func (m *mockChromeInstance) Close(logger log.Logger) {
 	// No-op for mock
-}
-
-// Mock Tab that captures the URL
-type mockTab struct {
-	capturedURL *string
-}
-
-func (mt *mockTab) NavigateAndWaitFor(addr string, headers map[string]any, eventName string) error {
-	*mt.capturedURL = addr
-	return nil
-}
-
-func (mt *mockTab) WithTimeout(timeout time.Duration) {
-	// No-op for mock
-}
-
-func (mt *mockTab) Close(logger log.Logger) {
-	// No-op for mock
-}
-
-func (mt *mockTab) Run(actions ...interface{}) error {
-	return nil
 }
 
 func TestCustomQueryParamsInChromeURL(t *testing.T) {
@@ -334,7 +311,7 @@ func TestCustomQueryParamsInChromeURL(t *testing.T) {
 	})
 }
 
-// Integration test that demonstrates the actual flow through panelPNGNativeRenderer
+// Integration test that demonstrates the actual flow through panelPNGNativeRenderer.
 func TestCustomQueryParamsIntegrationChromeNavigation(t *testing.T) {
 	Convey("When custom query parameters are configured for Chrome navigation", t, func() {
 		conf := config.Config{

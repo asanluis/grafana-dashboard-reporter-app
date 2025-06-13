@@ -98,6 +98,7 @@ func NewDashboardReporterApp(ctx context.Context, settings backend.AppInstanceSe
 			for name, value := range app.conf.CustomQueryParams {
 				q.Set(name, value)
 			}
+
 			req.URL.RawQuery = q.Encode()
 		}
 
