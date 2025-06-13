@@ -76,6 +76,7 @@ func (app *App) filterTemplateVariables(queryParams url.Values) url.Values {
 	}
 
 	filteredValues := url.Values{}
+
 	for key, values := range queryParams {
 		// Only include parameters that are not system parameters
 		if !systemParams[key] {
@@ -329,6 +330,7 @@ func (app *App) handleReport(w http.ResponseWriter, req *http.Request) {
 	// Get dashboard JSON model from API
 	// Filter query parameters to only include template variables
 	templateVariables := app.filterTemplateVariables(req.URL.Query())
+
 	model, err := app.dashboardModel(req.Context(), grafanaAppURL, dashboardUID, authHeader, templateVariables)
 	if err != nil {
 		ctxLogger.Error("failed to get dashboard JSON model", "err", err)
