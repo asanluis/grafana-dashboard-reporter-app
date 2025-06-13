@@ -27,26 +27,35 @@ var (
 
 // Config contains plugin settings.
 type Config struct {
-	AppURL              string            `env:"GF_REPORTER_PLUGIN_APP_URL, overwrite"                json:"appUrl"`
-	SkipTLSCheck        bool              `env:"GF_REPORTER_PLUGIN_SKIP_TLS_CHECK, overwrite"         json:"skipTlsCheck"`
-	Theme               string            `env:"GF_REPORTER_PLUGIN_REPORT_THEME, overwrite"           json:"theme"`
-	Orientation         string            `env:"GF_REPORTER_PLUGIN_REPORT_ORIENTATION, overwrite"     json:"orientation"`
-	Layout              string            `env:"GF_REPORTER_PLUGIN_REPORT_LAYOUT, overwrite"          json:"layout"`
-	DashboardMode       string            `env:"GF_REPORTER_PLUGIN_REPORT_DASHBOARD_MODE, overwrite"  json:"dashboardMode"`
-	TimeZone            string            `env:"GF_REPORTER_PLUGIN_REPORT_TIMEZONE, overwrite"        json:"timeZone"`
-	TimeFormat          string            `env:"GF_REPORTER_PLUGIN_REPORT_TIMEFORMAT, overwrite"      json:"timeFormat"`
-	EncodedLogo         string            `env:"GF_REPORTER_PLUGIN_REPORT_LOGO, overwrite"            json:"logo"`
-	HeaderTemplate      string            `env:"GF_REPORTER_PLUGIN_REPORT_HEADER_TEMPLATE, overwrite" json:"headerTemplate"`
-	FooterTemplate      string            `env:"GF_REPORTER_PLUGIN_REPORT_FOOTER_TEMPLATE, overwrite" json:"footerTemplate"`
-	MaxBrowserWorkers   int               `env:"GF_REPORTER_PLUGIN_MAX_BROWSER_WORKERS, overwrite"    json:"maxBrowserWorkers"`
-	MaxRenderWorkers    int               `env:"GF_REPORTER_PLUGIN_MAX_RENDER_WORKERS, overwrite"     json:"maxRenderWorkers"`
-	RemoteChromeURL     string            `env:"GF_REPORTER_PLUGIN_REMOTE_CHROME_URL, overwrite"      json:"remoteChromeUrl"`
-	NativeRendering     bool              `env:"GF_REPORTER_PLUGIN_NATIVE_RENDERER, overwrite"        json:"nativeRenderer"`
-	CustomQueryParams   map[string]string `env:"GF_REPORTER_PLUGIN_CUSTOM_QUERY_PARAMS, overwrite"    json:"customQueryParams"`
-	AppVersion          string            `json:"appVersion"`
-	IncludePanelIDs     []string
-	ExcludePanelIDs     []string
-	IncludePanelDataIDs []string
+	AppURL            string            `env:"GF_REPORTER_PLUGIN_APP_URL, overwrite"                json:"appUrl"`
+	SkipTLSCheck      bool              `env:"GF_REPORTER_PLUGIN_SKIP_TLS_CHECK, overwrite"         json:"skipTlsCheck"`
+	Theme             string            `env:"GF_REPORTER_PLUGIN_REPORT_THEME, overwrite"           json:"theme"`
+	Orientation       string            `env:"GF_REPORTER_PLUGIN_REPORT_ORIENTATION, overwrite"     json:"orientation"`
+	Layout            string            `env:"GF_REPORTER_PLUGIN_REPORT_LAYOUT, overwrite"          json:"layout"`
+	DashboardMode     string            `env:"GF_REPORTER_PLUGIN_REPORT_DASHBOARD_MODE, overwrite"  json:"dashboardMode"`
+	TimeZone          string            `env:"GF_REPORTER_PLUGIN_REPORT_TIMEZONE, overwrite"        json:"timeZone"`
+	TimeFormat        string            `env:"GF_REPORTER_PLUGIN_REPORT_TIMEFORMAT, overwrite"      json:"timeFormat"`
+	EncodedLogo       string            `env:"GF_REPORTER_PLUGIN_REPORT_LOGO, overwrite"            json:"logo"`
+	HeaderTemplate    string            `env:"GF_REPORTER_PLUGIN_REPORT_HEADER_TEMPLATE, overwrite" json:"headerTemplate"`
+	FooterTemplate    string            `env:"GF_REPORTER_PLUGIN_REPORT_FOOTER_TEMPLATE, overwrite" json:"footerTemplate"`
+	MaxBrowserWorkers int               `env:"GF_REPORTER_PLUGIN_MAX_BROWSER_WORKERS, overwrite"    json:"maxBrowserWorkers"`
+	MaxRenderWorkers  int               `env:"GF_REPORTER_PLUGIN_MAX_RENDER_WORKERS, overwrite"     json:"maxRenderWorkers"`
+	RemoteChromeURL   string            `env:"GF_REPORTER_PLUGIN_REMOTE_CHROME_URL, overwrite"      json:"remoteChromeUrl"`
+	NativeRendering   bool              `env:"GF_REPORTER_PLUGIN_NATIVE_RENDERER, overwrite"        json:"nativeRenderer"`
+	CustomQueryParams map[string]string `env:"GF_REPORTER_PLUGIN_CUSTOM_QUERY_PARAMS, overwrite"    json:"customQueryParams"`
+	AppVersion        string            `json:"appVersion"`
+	// Timeout configuration fields (in seconds)
+	Timeout                 int `env:"GF_REPORTER_PLUGIN_TIMEOUT, overwrite"                      json:"timeout"`
+	DialTimeout             int `env:"GF_REPORTER_PLUGIN_DIAL_TIMEOUT, overwrite"                 json:"dialTimeout"`
+	HTTPKeepAlive           int `env:"GF_REPORTER_PLUGIN_HTTP_KEEP_ALIVE, overwrite"              json:"httpKeepAlive"`
+	HTTPTLSHandshakeTimeout int `env:"GF_REPORTER_PLUGIN_HTTP_TLS_HANDSHAKE_TIMEOUT, overwrite"   json:"httpTLSHandshakeTimeout"`
+	HTTPIdleConnTimeout     int `env:"GF_REPORTER_PLUGIN_HTTP_IDLE_CONN_TIMEOUT, overwrite"       json:"httpIdleConnTimeout"`
+	HTTPMaxConnsPerHost     int `env:"GF_REPORTER_PLUGIN_HTTP_MAX_CONNS_PER_HOST, overwrite"      json:"httpMaxConnsPerHost"`
+	HTTPMaxIdleConns        int `env:"GF_REPORTER_PLUGIN_HTTP_MAX_IDLE_CONNS, overwrite"          json:"httpMaxIdleConns"`
+	HTTPMaxIdleConnsPerHost int `env:"GF_REPORTER_PLUGIN_HTTP_MAX_IDLE_CONNS_PER_HOST, overwrite" json:"httpMaxIdleConnsPerHost"`
+	IncludePanelIDs         []string
+	ExcludePanelIDs         []string
+	IncludePanelDataIDs     []string
 
 	// Time location
 	Location *time.Location
@@ -154,7 +163,7 @@ func (c *Config) String() string {
 		c.Theme, c.Orientation, c.Layout, c.DashboardMode, c.TimeZone, c.TimeFormat,
 		encodedLogo, c.MaxRenderWorkers, c.MaxBrowserWorkers, c.RemoteChromeURL, appURL,
 		c.SkipTLSCheck, includedPanelIDs, excludedPanelIDs, includeDataPanelIDs, c.NativeRendering,
-		int(c.HTTPClientOptions.Timeouts.Timeout.Seconds()),
+		c.Timeout,
 	)
 }
 
@@ -174,6 +183,15 @@ func Load(ctx context.Context, settings backend.AppInstanceSettings) (Config, er
 		FooterTemplate:    "",
 		MaxBrowserWorkers: 2,
 		MaxRenderWorkers:  2,
+		// Set default timeout values (in seconds) - increased for slow operations
+		Timeout:                 120, // 2 minutes default timeout
+		DialTimeout:             10,
+		HTTPKeepAlive:           30,
+		HTTPTLSHandshakeTimeout: 10,
+		HTTPIdleConnTimeout:     90,
+		HTTPMaxConnsPerHost:     0,
+		HTTPMaxIdleConns:        100,
+		HTTPMaxIdleConnsPerHost: 100,
 		HTTPClientOptions: httpclient.Options{
 			TLS: &httpclient.TLSOptions{
 				InsecureSkipVerify: false,
@@ -218,6 +236,21 @@ func Load(ctx context.Context, settings backend.AppInstanceSettings) (Config, er
 	}
 
 	config.HTTPClientOptions.TLS = &httpclient.TLSOptions{InsecureSkipVerify: config.SkipTLSCheck}
+
+	// Apply custom timeout configuration
+	if config.HTTPClientOptions.Timeouts == nil {
+		config.HTTPClientOptions.Timeouts = &httpclient.TimeoutOptions{}
+	}
+
+	// Set timeouts from configuration (convert seconds to time.Duration)
+	config.HTTPClientOptions.Timeouts.Timeout = time.Duration(config.Timeout) * time.Second
+	config.HTTPClientOptions.Timeouts.DialTimeout = time.Duration(config.DialTimeout) * time.Second
+	config.HTTPClientOptions.Timeouts.KeepAlive = time.Duration(config.HTTPKeepAlive) * time.Second
+	config.HTTPClientOptions.Timeouts.TLSHandshakeTimeout = time.Duration(config.HTTPTLSHandshakeTimeout) * time.Second
+	config.HTTPClientOptions.Timeouts.IdleConnTimeout = time.Duration(config.HTTPIdleConnTimeout) * time.Second
+	config.HTTPClientOptions.Timeouts.MaxConnsPerHost = config.HTTPMaxConnsPerHost
+	config.HTTPClientOptions.Timeouts.MaxIdleConns = config.HTTPMaxIdleConns
+	config.HTTPClientOptions.Timeouts.MaxIdleConnsPerHost = config.HTTPMaxIdleConnsPerHost
 
 	return config, nil
 }
