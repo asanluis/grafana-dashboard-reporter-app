@@ -17,24 +17,6 @@ import (
 	"github.com/mahendrapaipuri/authlib/authz"
 )
 
-type customQueryParamTransport struct {
-	base   http.RoundTripper
-	params map[string]string
-}
-
-func (t *customQueryParamTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	// Add custom query parameters to the request URL
-	if len(t.params) > 0 {
-		q := req.URL.Query()
-		for name, value := range t.params {
-			q.Set(name, value)
-		}
-		req.URL.RawQuery = q.Encode()
-	}
-
-	return t.base.RoundTrip(req)
-}
-
 const Name = "mahendrapaipuri-dashboardreporter-app"
 
 // Make sure App implements required interfaces. This is important to do
@@ -121,14 +103,6 @@ func NewDashboardReporterApp(ctx context.Context, settings backend.AppInstanceSe
 
 		// Allow unlimited redirects
 		return nil
-	}
-
-	// Add custom query parameters to the HTTP client if configured
-	if len(app.conf.CustomQueryParams) > 0 {
-		app.httpClient.Transport = &customQueryParamTransport{
-			base:   app.httpClient.Transport,
-			params: app.conf.CustomQueryParams,
-		}
 	}
 
 	// Create a new browser instance

@@ -184,6 +184,13 @@ func (d *Dashboard) panelPNGURL(p Panel, render bool) *url.URL {
 	values.Add("width", strconv.FormatInt(w, 10))
 	values.Add("height", strconv.FormatInt(h, 10))
 
+	// Add custom query parameters to HTTP client URLs (image renderer API)
+	if render && len(d.conf.CustomQueryParams) > 0 {
+		for name, value := range d.conf.CustomQueryParams {
+			values.Set(name, value)
+		}
+	}
+
 	// If render is true call grafana-image-renderer API URL
 	var renderer string
 	if render {
