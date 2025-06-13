@@ -59,30 +59,30 @@ func TestSettings(t *testing.T) {
 	})
 }
 
-func TestSettingsWithCustomHeaders(t *testing.T) {
-	Convey("When creating a new config with custom HTTP headers", t, func() {
-		const configJSON = `{"customHttpHeaders": {"X-Custom-Header": "test-value", "Authorization": "Bearer token123"}}`
+func TestSettingsWithCustomQueryParams(t *testing.T) {
+	Convey("When creating a new config with custom query parameters", t, func() {
+		const configJSON = `{"customQueryParams": {"param1": "test-value", "apiKey": "key123"}}`
 		configData := json.RawMessage(configJSON)
 		config, err := Load(t.Context(), backend.AppInstanceSettings{JSONData: configData})
 
-		Convey("Config should contain custom HTTP headers", func() {
+		Convey("Config should contain custom query parameters", func() {
 			So(err, ShouldBeNil)
-			So(config.CustomHttpHeaders, ShouldNotBeNil)
-			So(len(config.CustomHttpHeaders), ShouldEqual, 2)
-			So(config.CustomHttpHeaders["X-Custom-Header"], ShouldEqual, "test-value")
-			So(config.CustomHttpHeaders["Authorization"], ShouldEqual, "Bearer token123")
+			So(config.CustomQueryParams, ShouldNotBeNil)
+			So(len(config.CustomQueryParams), ShouldEqual, 2)
+			So(config.CustomQueryParams["param1"], ShouldEqual, "test-value")
+			So(config.CustomQueryParams["apiKey"], ShouldEqual, "key123")
 		})
 	})
 
-	Convey("When creating a new config with empty custom HTTP headers", t, func() {
+	Convey("When creating a new config with empty custom query parameters", t, func() {
 		const configJSON = `{}`
 		configData := json.RawMessage(configJSON)
 		config, err := Load(t.Context(), backend.AppInstanceSettings{JSONData: configData})
 
-		Convey("Config should have empty custom HTTP headers map", func() {
+		Convey("Config should have empty custom query parameters map", func() {
 			So(err, ShouldBeNil)
-			So(config.CustomHttpHeaders, ShouldNotBeNil)
-			So(len(config.CustomHttpHeaders), ShouldEqual, 0)
+			So(config.CustomQueryParams, ShouldNotBeNil)
+			So(len(config.CustomQueryParams), ShouldEqual, 0)
 		})
 	})
 }

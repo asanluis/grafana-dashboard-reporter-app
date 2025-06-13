@@ -17,14 +17,19 @@ import (
 	"github.com/mahendrapaipuri/authlib/authz"
 )
 
-type customHeaderTransport struct {
-	base    http.RoundTripper
-	headers map[string]string
+type customQueryParamTransport struct {
+	base   http.RoundTripper
+	params map[string]string
 }
 
-func (t *customHeaderTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	for name, value := range t.headers {
-		req.Header.Set(name, value)
+func (t *customQueryParamTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	// Add custom query parameters to the request URL
+	if len(t.params) > 0 {
+		q := req.URL.Query()
+		for name, value := range t.params {
+			q.Set(name, value)
+		}
+		req.URL.RawQuery = q.Encode()
 	}
 
 	return t.base.RoundTrip(req)
@@ -105,20 +110,24 @@ func NewDashboardReporterApp(ctx context.Context, settings backend.AppInstanceSe
 
 	// Configure redirect handling to allow unlimited redirects
 	app.httpClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		// Apply custom headers to redirect requests if configured
-		for name, value := range app.conf.CustomHttpHeaders {
-			req.Header.Set(name, value)
+		// Apply custom query parameters to redirect requests if configured
+		if len(app.conf.CustomQueryParams) > 0 {
+			q := req.URL.Query()
+			for name, value := range app.conf.CustomQueryParams {
+				q.Set(name, value)
+			}
+			req.URL.RawQuery = q.Encode()
 		}
 
 		// Allow unlimited redirects
 		return nil
 	}
 
-	// Add custom headers to the HTTP client if configured
-	if len(app.conf.CustomHttpHeaders) > 0 {
-		app.httpClient.Transport = &customHeaderTransport{
-			base:    app.httpClient.Transport,
-			headers: app.conf.CustomHttpHeaders,
+	// Add custom query parameters to the HTTP client if configured
+	if len(app.conf.CustomQueryParams) > 0 {
+		app.httpClient.Transport = &customQueryParamTransport{
+			base:   app.httpClient.Transport,
+			params: app.conf.CustomQueryParams,
 		}
 	}
 

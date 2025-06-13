@@ -48,9 +48,13 @@ func (d *Dashboard) panelPNGNativeRenderer(_ context.Context, p Panel) (PanelIma
 		}
 	}
 
-	// Add custom HTTP headers for native renderer (Chrome navigation)
-	for name, value := range d.conf.CustomHttpHeaders {
-		headers[name] = value
+	// Add custom query parameters to the URL for native renderer (Chrome navigation)
+	if len(d.conf.CustomQueryParams) > 0 {
+		q := panelURL.Query()
+		for name, value := range d.conf.CustomQueryParams {
+			q.Set(name, value)
+		}
+		panelURL.RawQuery = q.Encode()
 	}
 
 	err := tab.NavigateAndWaitFor(panelURL.String(), headers, "networkIdle")
