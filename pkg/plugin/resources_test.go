@@ -3,6 +3,7 @@ package plugin
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os/exec"
 	"strings"
 	"testing"
@@ -106,6 +107,89 @@ func TestReportResource(t *testing.T) {
 			}, &r)
 
 			So(repDashName, ShouldEqual, "testDash")
+		})
+	})
+}
+
+func TestFilterTemplateVariables(t *testing.T) {
+	Convey("When filtering template variables from query parameters", t, func() {
+		app := &App{
+			conf: config.Config{},
+		}
+
+		Convey("It should exclude system parameters", func() {
+			// Create query parameters with both system and template variables
+			queryParams := url.Values{}
+			queryParams.Add("dashUid", "test-dashboard-uid")
+			queryParams.Add("theme", "dark")
+			queryParams.Add("layout", "grid")
+			queryParams.Add("orientation", "landscape")
+			queryParams.Add("from", "now-6h")
+			queryParams.Add("to", "now")
+			queryParams.Add("panelId", "2")
+			queryParams.Add("access_id", "admin")
+			queryParams.Add("orgId", "1")
+			// Template variables (should be preserved)
+			queryParams.Add("var-server", "web01")
+			queryParams.Add("var-environment", "production")
+
+			filteredParams := app.filterTemplateVariables(queryParams)
+
+			// System parameters should be filtered out
+			So(filteredParams.Has("dashUid"), ShouldBeFalse)
+			So(filteredParams.Has("theme"), ShouldBeFalse)
+			So(filteredParams.Has("layout"), ShouldBeFalse)
+			So(filteredParams.Has("orientation"), ShouldBeFalse)
+			So(filteredParams.Has("from"), ShouldBeFalse)
+			So(filteredParams.Has("to"), ShouldBeFalse)
+			So(filteredParams.Has("panelId"), ShouldBeFalse)
+			So(filteredParams.Has("access_id"), ShouldBeFalse)
+			So(filteredParams.Has("orgId"), ShouldBeFalse)
+
+			// Template variables should be preserved
+			So(filteredParams.Has("var-server"), ShouldBeTrue)
+			So(filteredParams.Get("var-server"), ShouldEqual, "web01")
+			So(filteredParams.Has("var-environment"), ShouldBeTrue)
+			So(filteredParams.Get("var-environment"), ShouldEqual, "production")
+		})
+
+		Convey("It should preserve custom parameters that are not system parameters", func() {
+			queryParams := url.Values{}
+			queryParams.Add("dashUid", "test-uid")          // system parameter - should be filtered
+			queryParams.Add("custom-param", "custom-value") // custom parameter - should be preserved
+			queryParams.Add("my_var", "my_value")           // custom parameter - should be preserved
+
+			filteredParams := app.filterTemplateVariables(queryParams)
+
+			So(filteredParams.Has("dashUid"), ShouldBeFalse)
+			So(filteredParams.Has("custom-param"), ShouldBeTrue)
+			So(filteredParams.Get("custom-param"), ShouldEqual, "custom-value")
+			So(filteredParams.Has("my_var"), ShouldBeTrue)
+			So(filteredParams.Get("my_var"), ShouldEqual, "my_value")
+		})
+
+		Convey("It should handle empty query parameters", func() {
+			queryParams := url.Values{}
+
+			filteredParams := app.filterTemplateVariables(queryParams)
+
+			So(len(filteredParams), ShouldEqual, 0)
+		})
+
+		Convey("It should handle multiple values for the same parameter", func() {
+			queryParams := url.Values{}
+			queryParams.Add("var-hosts", "host1")
+			queryParams.Add("var-hosts", "host2")
+			queryParams.Add("dashUid", "test-uid") // system parameter
+
+			filteredParams := app.filterTemplateVariables(queryParams)
+
+			So(filteredParams.Has("dashUid"), ShouldBeFalse)
+			So(filteredParams.Has("var-hosts"), ShouldBeTrue)
+			hosts := filteredParams["var-hosts"]
+			So(len(hosts), ShouldEqual, 2)
+			So(hosts[0], ShouldEqual, "host1")
+			So(hosts[1], ShouldEqual, "host2")
 		})
 	})
 }

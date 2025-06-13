@@ -38,7 +38,7 @@ export type JsonData = {
   maxBrowserWorkers?: number;
   maxRenderWorkers?: number;
   remoteChromeUrl?: string;
-  customHttpHeaders?: Record<string, string>;
+  customQueryParams?: Record<string, string>;
   timeout?: number;
   dialTimeout?: number;
   httpKeepAlive?: number;
@@ -108,10 +108,10 @@ type State = {
   remoteChromeUrl: string;
   // If remoteChromeUrl has changed
   remoteChromeUrlChanged: boolean;
-  // Custom HTTP headers for render plugin
-  customHttpHeaders: string;
-  // If customHttpHeaders has changed
-  customHttpHeadersChanged: boolean;
+  // Custom query parameters for URLs
+  customQueryParams: string;
+  // If customQueryParams has changed
+  customQueryParamsChanged: boolean;
   // Tells us if the Service Account's token is set.
   // Set to `true` ONLY if it has already been set and haven't been changed.
   // (We unfortunately need an auxiliray variable for this, as `secureJsonData` is never exposed to the browser after it is set)
@@ -166,8 +166,8 @@ export const AppConfig = ({ plugin }: Props) => {
     maxRenderWorkersChanged: false,
     remoteChromeUrl: jsonData?.remoteChromeUrl || "",
     remoteChromeUrlChanged: false,
-    customHttpHeaders: jsonData?.customHttpHeaders ? JSON.stringify(jsonData.customHttpHeaders, null, 2) : "",
-    customHttpHeadersChanged: false,
+    customQueryParams: jsonData?.customQueryParams ? JSON.stringify(jsonData.customQueryParams, null, 2) : "",
+    customQueryParamsChanged: false,
     saToken: "",
     isSaTokenSet: Boolean(secureJsonFields?.saToken),
     isSaTokenReset: false,
@@ -313,11 +313,11 @@ export const AppConfig = ({ plugin }: Props) => {
     });
   };
 
-  const onChangeCustomHttpHeaders = (event: ChangeEvent<HTMLTextAreaElement>) => {
+  const onChangeCustomQueryParams = (event: ChangeEvent<HTMLTextAreaElement>) => {
     setState({
       ...state,
-      customHttpHeaders: event.target.value,
-      customHttpHeadersChanged: true,
+      customQueryParams: event.target.value,
+      customQueryParamsChanged: true,
     });
   };
 
@@ -368,7 +368,7 @@ export const AppConfig = ({ plugin }: Props) => {
                     maxBrowserWorkers: state.maxBrowserWorkers,
                     maxRenderWorkers: state.maxRenderWorkers,
                     remoteChromeUrl: state.remoteChromeUrl,
-                    customHttpHeaders: state.customHttpHeaders ? JSON.parse(state.customHttpHeaders) : {},
+                    customQueryParams: state.customQueryParams ? JSON.parse(state.customQueryParams) : {},
                     timeout: state.timeout,
                     dialTimeout: state.dialTimeout,
                     httpKeepAlive: state.httpKeepAlive,
@@ -420,7 +420,7 @@ export const AppConfig = ({ plugin }: Props) => {
                     maxBrowserWorkers: state.maxBrowserWorkers,
                     maxRenderWorkers: state.maxRenderWorkers,
                     remoteChromeUrl: state.remoteChromeUrl,
-                    customHttpHeaders: state.customHttpHeaders ? JSON.parse(state.customHttpHeaders) : {},
+                    customQueryParams: state.customQueryParams ? JSON.parse(state.customQueryParams) : {},
                     timeout: state.timeout,
                     dialTimeout: state.dialTimeout,
                     httpKeepAlive: state.httpKeepAlive,
@@ -718,20 +718,20 @@ export const AppConfig = ({ plugin }: Props) => {
           />
         </Field>
 
-        {/* Custom HTTP Headers */}
+        {/* Custom Query Parameters */}
         <Field
-          label="Custom HTTP Headers"
-          description="Custom HTTP headers to send to the render plugin. Provide as JSON object (e.g., {&quot;X-Custom-Header&quot;: &quot;value&quot;, &quot;Authorization&quot;: &quot;Bearer token&quot;})"
+          label="Custom Query Parameters"
+          description="Custom query parameters to add to panel URLs. Provide as JSON object (e.g., {&quot;param1&quot;: &quot;value1&quot;, &quot;param2&quot;: &quot;value2&quot;})"
           className={s.marginTop}
         >
           <TextArea
-            id="customHttpHeaders"
+            id="customQueryParams"
             rows={8}
             className={s.textarea}
-            label={`Custom HTTP Headers`}
-            placeholder='{\n  "X-Custom-Header": "value",\n  "Authorization": "Bearer token"\n}'
-            value={state.customHttpHeaders}
-            onChange={onChangeCustomHttpHeaders}
+            label={`Custom Query Parameters`}
+            placeholder='{\n  "param1": "value1",\n  "param2": "value2"\n}'
+            value={state.customQueryParams}
+            onChange={onChangeCustomQueryParams}
           />
         </Field>
       </ConfigSection>
@@ -760,7 +760,7 @@ export const AppConfig = ({ plugin }: Props) => {
                 maxBrowserWorkers: state.maxBrowserWorkers,
                 maxRenderWorkers: state.maxRenderWorkers,
                 remoteChromeUrl: state.remoteChromeUrl,
-                customHttpHeaders: state.customHttpHeaders ? JSON.parse(state.customHttpHeaders) : {},
+                customQueryParams: state.customQueryParams ? JSON.parse(state.customQueryParams) : {},
                 timeout: state.timeout,
                 dialTimeout: state.dialTimeout,
                 httpKeepAlive: state.httpKeepAlive,
@@ -794,7 +794,7 @@ export const AppConfig = ({ plugin }: Props) => {
               !state.maxBrowserWorkersChanged &&
               !state.maxRenderWorkersChanged &&
               !state.remoteChromeUrlChanged &&
-              !state.customHttpHeadersChanged &&
+              !state.customQueryParamsChanged &&
               !state.isSaTokenReset &&
               !state.saToken
           )}

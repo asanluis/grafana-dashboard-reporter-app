@@ -50,6 +50,44 @@ func (app *App) convertPanelIDs(ids []string) []string {
 	return panelIDs
 }
 
+// filterTemplateVariables filters query parameters to only include template variables.
+// It excludes system parameters like dashUid, theme, layout, etc.
+func (app *App) filterTemplateVariables(queryParams url.Values) url.Values {
+	// List of system parameters that should not be included as template variables
+	systemParams := map[string]bool{
+		"dashUid":            true,
+		"theme":              true,
+		"layout":             true,
+		"orientation":        true,
+		"dashboardMode":      true,
+		"timeZone":           true,
+		"timezone":           true,
+		"timeFormat":         true,
+		"includePanelID":     true,
+		"excludePanelID":     true,
+		"includePanelDataID": true,
+		"from":               true,
+		"to":                 true,
+		"width":              true,
+		"height":             true,
+		"panelId":            true,
+		"access_id":          true,
+		"orgId":              true,
+	}
+
+	filteredValues := url.Values{}
+	for key, values := range queryParams {
+		// Only include parameters that are not system parameters
+		if !systemParams[key] {
+			for _, value := range values {
+				filteredValues.Add(key, value)
+			}
+		}
+	}
+
+	return filteredValues
+}
+
 // updateConfig updates the default config from query parameters.
 func (app *App) updateConfig(req *http.Request, conf *config.Config) {
 	if req.URL.Query().Has("theme") {
@@ -289,7 +327,9 @@ func (app *App) handleReport(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Get dashboard JSON model from API
-	model, err := app.dashboardModel(req.Context(), grafanaAppURL, dashboardUID, authHeader, req.URL.Query())
+	// Filter query parameters to only include template variables
+	templateVariables := app.filterTemplateVariables(req.URL.Query())
+	model, err := app.dashboardModel(req.Context(), grafanaAppURL, dashboardUID, authHeader, templateVariables)
 	if err != nil {
 		ctxLogger.Error("failed to get dashboard JSON model", "err", err)
 		http.Error(w, "error generating report", http.StatusInternalServerError)
