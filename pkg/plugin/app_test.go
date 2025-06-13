@@ -20,6 +20,7 @@ func TestHTTPClientRedirects(t *testing.T) {
 
 			if redirectCount == 0 {
 				redirectCount++
+
 				http.Redirect(w, r, "/final", http.StatusFound)
 
 				return
@@ -56,7 +57,7 @@ func TestHTTPClientRedirects(t *testing.T) {
 			}
 
 			// Create request with custom query parameters
-			req, err := http.NewRequestWithContext(t.Context(), "GET", ts.URL+"/initial", nil)
+			req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, ts.URL+"/initial", nil)
 			So(err, ShouldBeNil)
 
 			// Add custom query parameters to initial request

@@ -54,6 +54,7 @@ func (d *Dashboard) panelPNGNativeRenderer(_ context.Context, p Panel) (PanelIma
 		for name, value := range d.conf.CustomQueryParams {
 			q.Set(name, value)
 		}
+
 		panelURL.RawQuery = q.Encode()
 	}
 

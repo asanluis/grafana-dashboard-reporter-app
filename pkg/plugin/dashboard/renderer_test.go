@@ -215,8 +215,7 @@ func TestCustomQueryParamsInRenderURL(t *testing.T) {
 }
 
 // Mock Chrome instance for testing.
-type mockChromeInstance struct {
-}
+type mockChromeInstance struct{}
 
 func (m *mockChromeInstance) NewTab(logger log.Logger, conf *config.Config) *chrome.Tab {
 	return &chrome.Tab{} // We'll override the methods we need
@@ -288,6 +287,7 @@ func TestCustomQueryParamsInChromeURL(t *testing.T) {
 			for name, value := range conf.CustomQueryParams {
 				q.Set(name, value)
 			}
+
 			panelURL.RawQuery = q.Encode()
 		}
 
@@ -365,6 +365,7 @@ func TestCustomQueryParamsIntegrationChromeNavigation(t *testing.T) {
 			for name, value := range conf.CustomQueryParams {
 				q.Set(name, value)
 			}
+
 			finalURL.RawQuery = q.Encode()
 		}
 
